@@ -3,122 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scudo AI by MC — Analizzatore Anti-Truffa</title>
+    <title>Scudo AI — Analizzatore Anti-Truffa</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{
             --bg:#0b1120;--s1:#131e35;--s2:#1a2744;--s3:#1e2e50;
-            --blue:#3b82f6;--blue-lt:#93c5fd;--teal:#14b8a6;--teal-lt:#5eead4;
-            --green:#22c55e;--green-lt:#86efac;--amber:#f59e0b;--amber-lt:#fcd34d;
-            --red:#ef4444;--red-lt:#fca5a5;--txt:#f0f6ff;--txt2:#94a3b8;--txt3:#64748b;
-            --border:rgba(99,179,237,0.13);--border2:rgba(99,179,237,0.26);--r:14px;--rlg:20px;
+            --blue:#3b82f6;--teal:#14b8a6;--txt:#f0f6ff;--txt2:#94a3b8;
+            --border:rgba(255,255,255,0.1);--r:16px;
         }
-        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6;overflow-x:hidden}
-        nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:64px;background:rgba(11,17,32,0.82);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-        .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-        .nav-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#14b8a6);display:flex;align-items:center;justify-content:center;font-size:18px}
-        .nav-name{font-size:1.05rem;font-weight:800;color:var(--txt)}
-        .nav-links{display:flex;gap:5px}
-        .nav-links a{color:var(--txt2);font-size:0.84rem;font-weight:500;text-decoration:none;padding:6px 12px;border-radius:8px;cursor:pointer;transition:0.2s}
-        .nav-links a:hover{background:rgba(255,255,255,0.06);color:var(--txt)}
-        .hero{padding:5rem 1.5rem 3.5rem;text-align:center}
-        .grad{background:linear-gradient(135deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .page{max-width:860px;margin:0 auto;padding:0 1.25rem 5rem}
-        .card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rlg);padding:1.5rem;margin-bottom:1rem}
-        textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);color:white;padding:1rem;min-height:140px;font-family:inherit;outline:none}
-        .btn-primary{width:100%;padding:1rem;border:none;border-radius:var(--r);background:linear-gradient(135deg,#3b82f6,#14b8a6);color:white;font-weight:700;cursor:pointer;margin-top:1rem;box-shadow:0 4px 20px rgba(59,130,246,0.22)}
-        #spinner{display:none;text-align:center;padding:2rem}
-        #result-section{display:none;margin-top:2rem}
-        .risk-banner{background:var(--s2);padding:1.5rem;border-radius:var(--rlg);border-left:5px solid var(--blue)}
-        footer{text-align:center;padding:3rem;border-top:1px solid var(--border);color:var(--txt3);font-size:0.8rem}
-        .sec-head{display:flex;align-items:center;gap:12px;margin:3rem 0 1.2rem}
-        .sec-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,0.1)}
+        body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);line-height:1.6}
+        
+        /* Navbar originale */
+        nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:70px;background:rgba(11,17,32,0.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+        .nav-logo{font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:8px}
+        .nav-links{display:flex;gap:20px;font-size:0.9rem;color:var(--txt2)}
+        .nav-links span{cursor:pointer;transition:0.2s}
+        .nav-links span:hover{color:var(--txt)}
+
+        .hero{text-align:center;padding:5rem 1rem 3rem}
+        .container{max-width:800px;margin:0 auto;padding:0 1rem 5rem}
+
+        /* Tabs Selettori */
+        .tabs{display:flex;gap:10px;margin-bottom:1.5rem;background:var(--s1);padding:6px;border-radius:14px;border:1px solid var(--border)}
+        .tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-radius:10px;font-weight:600;transition:0.3s;color:var(--txt2)}
+        .tab.active{background:var(--s2);color:white;box-shadow:0 4px 15px rgba(0,0,0,0.3)}
+
+        .card{background:var(--s1);padding:2rem;border-radius:28px;border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+        
+        /* Input area */
+        textarea{width:100%;height:160px;background:var(--bg);border:1.5px solid var(--s2);border-radius:var(--r);color:white;padding:1.2rem;font-family:inherit;font-size:1rem;margin-bottom:1.2rem;resize:none;outline:none;transition:0.3s}
+        textarea:focus{border-color:var(--blue)}
+
+        .upload-area{border:2px dashed var(--s3);padding:3.5rem 1rem;text-align:center;border-radius:var(--r);cursor:pointer;margin-bottom:1.2rem;transition:0.3s}
+        .upload-area:hover{border-color:var(--blue);background:rgba(59,130,246,0.05)}
+
+        .btn-primary{width:100%;padding:1.2rem;background:linear-gradient(135deg, var(--blue), var(--teal));border:none;border-radius:var(--r);color:white;font-weight:800;cursor:pointer;font-size:1.1rem;box-shadow:0 8px 25px rgba(59,130,246,0.3)}
+        .btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+
+        #spinner{display:none;text-align:center;margin:2rem 0}
+        #result-section{display:none;background:var(--s2);padding:1.8rem;border-radius:var(--r);margin-top:2rem;border-left:5px solid var(--blue);animation:fadeIn 0.5s}
+
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     </style>
 </head>
 <body>
     <nav>
-        <a class="nav-brand" href="#">
-            <div class="nav-icon">🛡️</div>
-            <div class="nav-name">Scudo AI <span>by MC</span></div>
-        </a>
+        <div class="nav-logo">🛡️ Scudo AI</div>
         <div class="nav-links">
-            <a onclick="document.getElementById('analisi').scrollIntoView()">Analisi</a>
-            <a onclick="alert('Funzione in arrivo!')">Screenshot</a>
-            <a onclick="alert('Funzione in arrivo!')">Autorità</a>
+            <span>Analisi</span>
+            <span>Screenshot</span>
+            <span>Autorità</span>
         </div>
     </nav>
 
-    <header class="hero">
-        <h1>Proteggi te stesso dalle <span class="grad">truffe digitali</span></h1>
-        <p style="color:var(--txt2);max-width:540px;margin:1rem auto">Analizza messaggi sospetti in pochi secondi con l'intelligenza artificiale.</p>
-    </header>
+    <div class="hero">
+        <h1 style="font-size:2.8rem;margin-bottom:0.5rem">Proteggiti dalle <span style="color:var(--blue)">Truffe</span></h1>
+        <p style="color:var(--txt2);font-size:1.1rem">L'intelligenza artificiale che smaschera i messaggi sospetti.</p>
+    </div>
 
-    <main class="page">
-        <div id="analisi"></div>
-        <div class="sec-head">
-            <div class="sec-ico">🔍</div>
-            <div><strong>Analisi Anti-Truffa</strong></div>
+    <main class="container">
+        <div class="tabs">
+            <div id="tab-text" class="tab active" onclick="switchTab('text')">📩 Testo / Messaggio</div>
+            <div id="tab-image" class="tab" onclick="switchTab('image')">📸 Immagine / Screenshot</div>
         </div>
 
         <div class="card">
-            <textarea id="msg-input" placeholder="Incolla qui l'SMS, l'email o il messaggio WhatsApp sospetto..."></textarea>
-            <button class="btn-primary" id="analyze-btn" onclick="analyze()">🛡️ Analizza ora</button>
-            
-            <div id="spinner">
-                <div style="font-weight:bold">Analisi in corso...</div>
-                <div style="font-size:0.8rem;color:var(--txt3)">L'AI sta esaminando il contenuto</div>
-            </div>
-
-            <div id="result-section" id="result-section">
-                <div class="risk-banner">
-                    <h3 style="margin-bottom:0.5rem">Risultato dell'Analisi:</h3>
-                    <p id="risk-desc" style="color:var(--txt2);white-space:pre-wrap"></p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <p>Scudo AI by MC — Strumento a scopo informativo basato su AI.</p>
-    </footer>
-
-    <script>
-        async function analyze() {
-            const text = document.getElementById('msg-input').value.trim();
-            const btn = document.getElementById('analyze-btn');
-            const spinner = document.getElementById('spinner');
-            const result = document.getElementById('result-section');
-            const desc = document.getElementById('risk-desc');
-
-            if (!text) return alert("Inserisci un messaggio da analizzare!");
-
-            btn.disabled = true;
-            spinner.style.display = 'block';
-            result.style.display = 'none';
-
-            try {
-                const response = await fetch("/.netlify/functions/analyze", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: text })
-                });
-
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "Errore del server");
-
-                // Estrazione testo da risposta Gemini
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                desc.innerText = aiResponse;
-                result.style.display = 'block';
-                result.scrollIntoView({ behavior: 'smooth' });
-            } catch (err) {
-                alert("Errore: " + err.message);
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+            <div id="text-input-container
