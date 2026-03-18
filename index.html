@@ -1,558 +1,103 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scudo AI by MC — Analizzatore Anti-Truffa</title>
-<meta name="description" content="Analizza messaggi e immagini sospette con intelligenza artificiale. Scopri il rischio truffa in secondi.">
-<meta name="theme-color" content="#0b1120">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Scudo AI">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230b1120'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle'%3E🛡️%3C/text%3E%3C/svg%3E">
-<link rel="manifest" id="pwa-manifest">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0b1120;--s1:#131e35;--s2:#1a2744;--s3:#1e2e50;
-  --blue:#3b82f6;--blue-lt:#93c5fd;
-  --teal:#14b8a6;--teal-lt:#5eead4;
-  --green:#22c55e;--green-lt:#86efac;
-  --amber:#f59e0b;--amber-lt:#fcd34d;
-  --red:#ef4444;--red-lt:#fca5a5;
-  --txt:#f0f6ff;--txt2:#94a3b8;--txt3:#64748b;
-  --border:rgba(99,179,237,0.13);--border2:rgba(99,179,237,0.26);
-  --r:14px;--rlg:20px;
-}
-html{scroll-behavior:smooth}
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;line-height:1.6}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(59,130,246,0.09) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(20,184,166,0.07) 0%,transparent 60%)}
-
-nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:64px;background:rgba(11,17,32,0.82);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#14b8a6);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 0 16px rgba(59,130,246,0.3)}
-.nav-name{font-size:1.05rem;font-weight:800;color:var(--txt);letter-spacing:-0.3px}
-.nav-name span{color:var(--blue-lt)}
-.nav-byline{font-size:0.68rem;color:var(--txt3);font-weight:400;margin-top:-1px}
-.nav-right{display:flex;align-items:center;gap:0.6rem}
-.nav-links{display:flex;gap:2px}
-.nav-links a{color:var(--txt2);font-size:0.84rem;font-weight:500;text-decoration:none;padding:6px 12px;border-radius:8px;transition:all 0.15s;cursor:pointer}
-.nav-links a:hover{color:var(--txt);background:rgba(255,255,255,0.06)}
-#install-btn{display:none;align-items:center;gap:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.32);border-radius:10px;padding:8px 14px;color:var(--blue-lt);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
-#install-btn:hover{background:rgba(59,130,246,0.22);transform:translateY(-1px);box-shadow:0 4px 14px rgba(59,130,246,0.2)}
-#install-btn.visible{display:flex}
-#install-btn svg{width:14px;height:14px}
-
-.hero{position:relative;z-index:1;padding:5rem 1.5rem 3.5rem;text-align:center;overflow:hidden}
-.hero-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.22);border-radius:100px;padding:6px 16px;margin-bottom:1.75rem;font-size:0.77rem;font-weight:600;color:var(--blue-lt);letter-spacing:0.04em;text-transform:uppercase}
-.pill-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:blink 2s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.65)}}
-h1{font-size:clamp(2.1rem,6vw,3.7rem);font-weight:800;line-height:1.1;letter-spacing:-1px;color:var(--txt);margin-bottom:1.2rem}
-.grad{background:linear-gradient(135deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-desc{max-width:540px;margin:0 auto 2.5rem;color:var(--txt2);font-size:1.02rem;line-height:1.65}
-.hero-stats{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap}
-.stat-val{font-size:1.5rem;font-weight:800;color:var(--txt)}
-.stat-lbl{font-size:0.73rem;color:var(--txt3);font-weight:500;margin-top:1px}
-
-.page{max-width:860px;margin:0 auto;padding:0 1.25rem 5rem;position:relative;z-index:1}
-.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;margin-top:3rem}
-.sec-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.sec-ico.blue{background:rgba(59,130,246,0.13);border:1px solid rgba(59,130,246,0.22)}
-.sec-ico.teal{background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.2)}
-.sec-ico.red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)}
-.sec-title{font-size:1.12rem;font-weight:700;color:var(--txt)}
-.sec-sub{font-size:0.8rem;color:var(--txt3);margin-top:1px}
-
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--rlg);padding:1.5rem;margin-bottom:1rem;transition:border-color 0.2s}
-.card:hover{border-color:var(--border2)}
-
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:var(--s2);padding:5px;border-radius:var(--r);border:1px solid var(--border);margin-bottom:1.25rem}
-.tab{padding:0.7rem;background:transparent;border:none;color:var(--txt2);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.87rem;font-weight:500;border-radius:10px;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:7px}
-.tab.active{background:var(--bg);color:var(--txt);font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,0.3);border:1px solid var(--border2)}
-
-textarea{width:100%;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);color:var(--txt);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.93rem;line-height:1.6;padding:1rem 1.1rem;resize:vertical;min-height:140px;outline:none;transition:border-color 0.2s,box-shadow 0.2s}
-textarea:focus{border-color:rgba(59,130,246,0.45);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
-textarea::placeholder{color:var(--txt3)}
-.field-label{display:block;font-size:0.81rem;font-weight:600;color:var(--txt2);margin-bottom:6px}
-
-.upload-area{border:2px dashed rgba(59,130,246,0.22);border-radius:var(--r);padding:2.5rem 1.5rem;text-align:center;cursor:pointer;background:var(--s2);transition:all 0.2s;display:none}
-.upload-area.visible{display:block}
-.upload-area:hover{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.04)}
-.upload-area input[type=file]{display:none}
-.upload-ico{width:52px;height:52px;margin:0 auto 1rem;border-radius:14px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.18);display:flex;align-items:center;justify-content:center;font-size:22px}
-.upload-title{font-size:0.95rem;font-weight:600;color:var(--txt);margin-bottom:4px}
-.upload-sub{font-size:0.81rem;color:var(--txt3)}
-.upload-sub strong{color:var(--blue-lt);cursor:pointer}
-#preview-img{max-width:100%;max-height:260px;border-radius:10px;margin-top:1rem;display:none;border:1px solid var(--border)}
-
-.notice{display:flex;align-items:flex-start;gap:10px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.18);border-radius:10px;padding:0.8rem 1rem;font-size:0.82rem;color:#fcd34d;line-height:1.55;margin-top:0.75rem}
-
-.btn-primary{width:100%;padding:1rem 1.5rem;border:none;border-radius:var(--r);background:linear-gradient(135deg,#3b82f6,#14b8a6);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.98rem;font-weight:700;cursor:pointer;transition:all 0.22s;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:1.1rem;box-shadow:0 4px 20px rgba(59,130,246,0.22)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,130,246,0.36)}
-.btn-primary:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none}
-
-#spinner{display:none;text-align:center;padding:3rem 1rem}
-.spin-ring{width:52px;height:52px;margin:0 auto 1.25rem;border-radius:50%;border:3px solid var(--s3);border-top-color:var(--blue);animation:spin 0.75s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin-msg{color:var(--txt2);font-size:0.9rem;font-weight:600}
-.spin-sub{color:var(--txt3);font-size:0.78rem;margin-top:4px}
-
-#result-section{display:none}
-.risk-banner{border-radius:var(--rlg);padding:1.5rem;margin-bottom:1rem;display:flex;align-items:center;gap:1.5rem;border:1.5px solid var(--border);background:var(--s1);transition:border-color 0.5s,background 0.5s}
-.gauge-wrap{position:relative;width:96px;height:96px;flex-shrink:0}
-.gauge-wrap svg{transform:rotate(-90deg)}
-.g-bg{fill:none;stroke:var(--s3);stroke-width:9}
-.g-arc{fill:none;stroke-width:9;stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1),stroke 0.5s}
-.g-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.g-pct{font-size:1.65rem;font-weight:800;line-height:1;letter-spacing:-1px}
-.g-lbl{font-size:0.57rem;color:var(--txt3);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
-.risk-text{flex:1;min-width:0}
-.risk-level{font-size:1.25rem;font-weight:800;letter-spacing:-0.3px;margin-bottom:4px}
-.risk-desc{font-size:0.87rem;color:var(--txt2);line-height:1.5}
-.risk-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:0.73rem;font-weight:600;padding:4px 10px;border-radius:100px}
-.chip.safe{background:rgba(34,197,94,0.1);color:var(--green-lt);border:1px solid rgba(34,197,94,0.18)}
-.chip.warn{background:rgba(245,158,11,0.1);color:var(--amber-lt);border:1px solid rgba(245,158,11,0.18)}
-.chip.danger{background:rgba(239,68,68,0.1);color:var(--red-lt);border:1px solid rgba(239,68,68,0.18)}
-
-.rcards{display:grid;gap:10px}
-.rcard{background:var(--s1);border:1px solid var(--border);border-radius:var(--rlg);padding:1.25rem 1.35rem;transition:border-color 0.15s}
-.rcard:hover{border-color:var(--border2)}
-.rcard-head{display:flex;align-items:center;gap:10px;margin-bottom:0.9rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
-.rcard-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.rcard-ico.sig{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.18)}
-.rcard-ico.adv{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.18)}
-.rcard-ico.stp{background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.18)}
-.rcard-title{font-size:0.87rem;font-weight:700;color:var(--txt)}
-.rcard-body{font-size:0.88rem;line-height:1.72;color:var(--txt2)}
-.rcard-body ul{padding-left:1.1rem;display:flex;flex-direction:column;gap:6px}
-.rcard-body li::marker{color:var(--blue-lt)}
-
-.acc-item{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;transition:border-color 0.15s}
-.acc-item:hover{border-color:var(--border2)}
-.acc-head{width:100%;background:none;border:none;color:var(--txt);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.9rem;font-weight:600;padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background 0.14s;text-align:left;gap:12px}
-.acc-head:hover{background:rgba(255,255,255,0.025)}
-.acc-left{display:flex;align-items:center;gap:10px}
-.acc-badge{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:rgba(59,130,246,0.09);border:1px solid rgba(59,130,246,0.16)}
-.acc-chev{color:var(--txt3);transition:transform 0.3s;display:flex;flex-shrink:0}
-.acc-chev svg{width:18px;height:18px}
-.acc-body{max-height:0;overflow:hidden;transition:max-height 0.38s ease}
-.acc-body.open{max-height:700px}
-.acc-content{padding:0 1.2rem 1.2rem 3.5rem;color:var(--txt2);font-size:0.86rem;line-height:1.75}
-.acc-content ol,.acc-content ul{padding-left:1.2rem;margin-top:0.4rem;display:flex;flex-direction:column;gap:4px}
-.acc-content strong{color:var(--txt)}
-.acc-content p{margin-bottom:0.4rem}
-.dtag{display:inline-block;background:rgba(20,184,166,0.09);color:var(--teal-lt);border:1px solid rgba(20,184,166,0.18);border-radius:6px;padding:2px 10px;font-size:0.73rem;font-weight:600;margin-bottom:6px;letter-spacing:0.03em}
-.tipbox{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.14);border-radius:8px;padding:0.6rem 0.9rem;font-size:0.81rem;color:var(--blue-lt);margin-top:0.75rem;line-height:1.5}
-
-.auth-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:10px}
-.auth-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.2rem;transition:all 0.18s;display:flex;flex-direction:column;gap:0.65rem}
-.auth-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
-.auth-top{display:flex;align-items:center;gap:10px}
-.auth-emoji{width:38px;height:38px;border-radius:10px;background:rgba(99,179,237,0.07);border:1px solid rgba(99,179,237,0.13);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.auth-name{font-size:0.88rem;font-weight:700;color:var(--txt)}
-.auth-role{font-size:0.74rem;color:var(--txt3);line-height:1.3}
-.auth-links{display:flex;flex-direction:column;gap:5px}
-.auth-link{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:7px 11px;text-decoration:none;color:var(--txt2);font-size:0.81rem;font-weight:500;transition:all 0.14s}
-.auth-link:hover{background:rgba(59,130,246,0.09);border-color:rgba(59,130,246,0.22);color:var(--blue-lt)}
-
-.emergency{background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(245,158,11,0.06));border:1px solid rgba(239,68,68,0.2);border-radius:var(--r);padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:12px;margin-bottom:1.2rem}
-.emergency-ico{font-size:20px;flex-shrink:0;margin-top:1px}
-.emergency-txt{font-size:0.86rem;line-height:1.55;color:var(--txt2)}
-.emergency-txt strong{color:var(--red-lt)}
-
-#install-modal{display:none;position:fixed;inset:0;z-index:999;background:rgba(7,12,22,0.8);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:1.5rem}
-#install-modal.open{display:flex}
-.modal-box{background:var(--s1);border:1px solid var(--border2);border-radius:24px;max-width:500px;width:100%;padding:2rem;box-shadow:0 24px 80px rgba(0,0,0,0.5);animation:slideup 0.28s cubic-bezier(.34,1.2,.64,1);max-height:90vh;overflow-y:auto}
-@keyframes slideup{from{transform:translateY(28px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-hdr{text-align:center;margin-bottom:1.75rem}
-.modal-bigico{font-size:2.75rem;margin-bottom:0.7rem}
-.modal-title{font-size:1.35rem;font-weight:800;color:var(--txt);letter-spacing:-0.3px;margin-bottom:5px}
-.modal-sub{font-size:0.86rem;color:var(--txt2);line-height:1.55;max-width:340px;margin:0 auto}
-.ptabs{display:flex;gap:5px;margin-bottom:1.2rem;background:var(--s2);padding:4px;border-radius:10px;border:1px solid var(--border)}
-.ptab{flex:1;padding:8px 4px;background:transparent;border:none;color:var(--txt3);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.79rem;font-weight:600;border-radius:7px;cursor:pointer;transition:all 0.15s;text-align:center}
-.ptab.active{background:var(--bg);color:var(--txt);box-shadow:0 2px 8px rgba(0,0,0,0.3);border:1px solid var(--border2)}
-.psteps{display:none;flex-direction:column;gap:8px}
-.psteps.active{display:flex}
-.step-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:var(--s2);border:1px solid var(--border);border-radius:10px}
-.step-num{width:22px;height:22px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#3b82f6,#14b8a6);color:#fff;font-size:0.68rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.step-txt{font-size:0.84rem;line-height:1.5;color:var(--txt2)}
-.step-txt strong{color:var(--txt)}
-.modal-actions{display:flex;flex-direction:column;gap:8px;margin-top:1.5rem}
-.btn-install{width:100%;padding:0.9rem;border:none;border-radius:var(--r);background:linear-gradient(135deg,#3b82f6,#14b8a6);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.93rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-install:hover{box-shadow:0 6px 20px rgba(59,130,246,0.3);transform:translateY(-1px)}
-.btn-close{width:100%;padding:0.8rem;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--txt2);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.87rem;font-weight:500;cursor:pointer;transition:all 0.15s}
-.btn-close:hover{border-color:var(--border2);color:var(--txt)}
-
-footer{position:relative;z-index:1;text-align:center;padding:2rem 1.5rem;border-top:1px solid var(--border)}
-.footer-logo{font-size:1.05rem;font-weight:800;color:var(--txt);margin-bottom:6px}
-.footer-logo span{background:linear-gradient(135deg,#60a5fa,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.footer-note{font-size:0.77rem;color:var(--txt3);line-height:1.6;max-width:420px;margin:0 auto}
-
-@media(max-width:640px){
-  nav{padding:0 1rem}
-  .nav-links{display:none}
-  h1{font-size:2rem}
-  .hero{padding:3rem 1rem 2.5rem}
-  .hero-stats{gap:1.5rem}
-  .risk-banner{flex-direction:column;text-align:center}
-  .risk-chips{justify-content:center}
-  .auth-grid{grid-template-columns:1fr}
-  .acc-content{padding-left:1.2rem}
-  #install-btn .ibtn-label{display:none}
-}
-</style>
-</head>
-<body>
-
-<nav>
-  <a class="nav-brand" href="#">
-    <div class="nav-icon">🛡️</div>
-    <div>
-      <div class="nav-name">Scudo <span>AI</span></div>
-      <div class="nav-byline">by MC</div>
-    </div>
-  </a>
-  <div class="nav-right">
-    <div class="nav-links">
-      <a onclick="goTo('analisi')">Analisi</a>
-      <a onclick="goTo('screenshot')">Screenshot</a>
-      <a onclick="goTo('autorita')">Autorità</a>
-    </div>
-    <button id="install-btn" onclick="openInstallModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span class="ibtn-label">Installa App</span>
-    </button>
-  </div>
-</nav>
-
-<header class="hero">
-  <div class="hero-pill"><div class="pill-dot"></div> Powered by Gemini AI</div>
-  <h1>Proteggi te stesso<br>dalle <span class="grad">truffe digitali</span></h1>
-  <p class="hero-desc">Incolla un messaggio sospetto o carica uno screenshot: l'intelligenza artificiale lo analizza in secondi e ti dice quanto è rischioso, con consigli pratici su cosa fare.</p>
-  <div class="hero-stats">
-    <div class="stat"><div class="stat-val">AI</div><div class="stat-lbl">Analisi avanzata</div></div>
-    <div class="stat"><div class="stat-val">100%</div><div class="stat-lbl">Gratuito sempre</div></div>
-    <div class="stat"><div class="stat-val">3s</div><div class="stat-lbl">Risposta rapida</div></div>
-    <div class="stat"><div class="stat-val">🇮🇹</div><div class="stat-lbl">In italiano</div></div>
-  </div>
-</header>
-
-<main class="page">
-
-  <div id="analisi"></div>
-  <div class="sec-head">
-    <div class="sec-ico blue">🔍</div>
-    <div><div class="sec-title">Analisi Anti-Truffa</div><div class="sec-sub">Testo o immagine — l'AI analizza tutto in pochi secondi</div></div>
-  </div>
-
-  <div class="card">
-    <div class="tabs">
-      <button class="tab active" id="tab-btn-text" onclick="switchTab('text',this)">✉️ Testo / Messaggio</button>
-      <button class="tab" id="tab-btn-image" onclick="switchTab('image',this)">🖼️ Immagine / Screenshot</button>
-    </div>
-
-    <div id="panel-text">
-      <label class="field-label" for="msg-input">Incolla il messaggio sospetto</label>
-      <textarea id="msg-input" placeholder="Es: «Hai vinto un premio! Clicca qui entro 24 ore: bit.ly/xyz»&#10;&#10;Incolla SMS, email, notifiche WhatsApp o qualsiasi testo sospetto..."></textarea>
-    </div>
-
-    <div id="panel-image" style="display:none">
-      <label class="upload-area visible" id="drop-zone" for="img-input">
-        <input type="file" id="img-input" accept="image/*">
-        <div class="upload-ico">📎</div>
-        <div class="upload-title">Trascina l'immagine qui</div>
-        <div class="upload-sub">oppure <strong onclick="document.getElementById('img-input').click()">sfoglia i file</strong> · JPG, PNG, WEBP · max 5 MB</div>
-        <img id="preview-img" src="" alt="Anteprima">
-      </label>
-      <label class="field-label" for="img-extra" style="margin-top:0.8rem">Nota aggiuntiva (opzionale)</label>
-      <textarea id="img-extra" placeholder="Aggiungi contesto sull'immagine..." style="min-height:70px"></textarea>
-    </div>
-
-    <div class="notice">
-      <span style="flex-shrink:0;margin-top:1px">⚠️</span>
-      <span>Non inserire <strong>mai</strong> password, PIN, dati bancari o numeri di carta. Carica solo contenuti anonimi da analizzare.</span>
-    </div>
-    <button class="btn-primary" id="analyze-btn" onclick="analyze()">🛡️ Analizza ora</button>
-  </div>
-
-  <div id="spinner">
-    <div class="spin-ring"></div>
-    <div class="spin-msg">Analisi in corso...</div>
-    <div class="spin-sub">L'AI sta esaminando il contenuto</div>
-  </div>
-
-  <div id="result-section">
-    <div class="sec-head" style="margin-top:1.5rem">
-      <div class="sec-ico blue">📊</div>
-      <div><div class="sec-title">Risultato Analisi</div><div class="sec-sub">Basato sull'analisi dell'intelligenza artificiale</div></div>
-    </div>
-    <div class="risk-banner" id="risk-banner">
-      <div class="gauge-wrap">
-        <svg viewBox="0 0 100 100" width="96" height="96">
-          <circle class="g-bg" cx="50" cy="50" r="42"/>
-          <circle class="g-arc" id="gauge-arc" cx="50" cy="50" r="42"/>
-        </svg>
-        <div class="g-center">
-          <div class="g-pct" id="gauge-pct">0%</div>
-          <div class="g-lbl">Rischio</div>
-        </div>
-      </div>
-      <div class="risk-text">
-        <div class="risk-level" id="risk-level">—</div>
-        <div class="risk-desc" id="risk-desc">In attesa di analisi...</div>
-        <div class="risk-chips" id="risk-chips"></div>
-      </div>
-    </div>
-    <div class="rcards">
-      <div class="rcard"><div class="rcard-head"><div class="rcard-ico sig">🔎</div><div class="rcard-title">Segnali individuati</div></div><div class="rcard-body" id="signals-out"></div></div>
-      <div class="rcard"><div class="rcard-head"><div class="rcard-ico adv">🛡️</div><div class="rcard-title">Come proteggerti</div></div><div class="rcard-body" id="advice-out"></div></div>
-      <div class="rcard"><div class="rcard-head"><div class="rcard-ico stp">✅</div><div class="rcard-title">Prossimi passi consigliati</div></div><div class="rcard-body" id="steps-out"></div></div>
-    </div>
-  </div>
-
-  <div id="screenshot" style="padding-top:0.5rem"></div>
-  <div class="sec-head">
-    <div class="sec-ico teal">📸</div>
-    <div><div class="sec-title">Come fare Screenshot</div><div class="sec-sub">Conserva le prove della truffa su ogni dispositivo</div></div>
-  </div>
-
-  <div class="acc-item">
-    <button class="acc-head" onclick="togAcc(this)" aria-expanded="false"><div class="acc-left"><div class="acc-badge">📱</div>iPhone / iPad (iOS)</div><span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-    <div class="acc-body"><div class="acc-content">
-      <div class="dtag">Face ID — iPhone X e successivi</div>
-      <ol><li>Tieni premuto il tasto <strong>laterale (accensione)</strong></li><li>Premi contemporaneamente <strong>Volume Su</strong></li><li>Rilascia: schermo lampeggia, screenshot salvato in Foto</li><li>L'anteprima appare in basso a sinistra — toccala per modificarla</li></ol>
-      <br><div class="dtag">Touch ID — iPhone 8 e precedenti</div>
-      <ol><li>Tieni premuto il tasto <strong>Home</strong></li><li>Premi contemporaneamente il tasto <strong>laterale o superiore</strong></li><li>Foto salvata automaticamente in Foto → Recenti</li></ol>
-      <div class="tipbox">💡 Usa "Screenshot a tutta pagina" dopo lo scatto per catturare conversazioni lunghe in un unico file.</div>
-    </div></div>
-  </div>
-
-  <div class="acc-item">
-    <button class="acc-head" onclick="togAcc(this)" aria-expanded="false"><div class="acc-left"><div class="acc-badge">🤖</div>Smartphone Android</div><span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-    <div class="acc-body"><div class="acc-content">
-      <div class="dtag">Metodo universale</div>
-      <ol><li>Premi <strong>Accensione + Volume Giù</strong> insieme per 1-2 secondi</li><li>Salvato in Galleria → Screenshots</li></ol>
-      <br><div class="dtag">Samsung Galaxy</div>
-      <ul><li>Scorri il palmo da destra a sinistra (se attivo)</li><li>Oppure: tocca icona <strong>Screenshot</strong> nel pannello notifiche rapide</li><li>Supporta <strong>"Screenshot lungo"</strong> per pagine intere</li></ul>
-      <div class="tipbox">💡 Su Android 12+: dopo lo screenshot appare un editor per evidenziare mittente e data.</div>
-    </div></div>
-  </div>
-
-  <div class="acc-item">
-    <button class="acc-head" onclick="togAcc(this)" aria-expanded="false"><div class="acc-left"><div class="acc-badge">💻</div>Windows 10 / 11</div><span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-    <div class="acc-body"><div class="acc-content">
-      <div class="dtag">Metodo consigliato</div>
-      <ol><li>Premi <strong>Win + Shift + S</strong></li><li>Trascina per selezionare l'area</li><li>Clicca la notifica → salva in Immagini → Screenshot</li></ol>
-      <br><div class="dtag">Strumento di Cattura</div>
-      <ul><li>Cerca <strong>"Strumento di cattura"</strong> nel menu Start</li><li>Scegli: rettangolo, finestra o schermo intero</li></ul>
-      <br><div class="dtag">Metodo classico</div>
-      <ul><li>Tasto <strong>Stamp (PrtScn)</strong> → apri Paint → Ctrl+V → Salva</li></ul>
-    </div></div>
-  </div>
-
-  <div class="acc-item">
-    <button class="acc-head" onclick="togAcc(this)" aria-expanded="false"><div class="acc-left"><div class="acc-badge">🍎</div>Mac (macOS)</div><span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-    <div class="acc-body"><div class="acc-content">
-      <div class="dtag">Schermata completa</div><p><strong>Cmd ⌘ + Shift + 3</strong> → salvato sul Desktop</p>
-      <div class="dtag">Selezione area</div><p><strong>Cmd ⌘ + Shift + 4</strong> → trascina per selezionare</p>
-      <div class="dtag">Finestra specifica</div><p><strong>Cmd ⌘ + Shift + 4</strong> → premi <strong>Spazio</strong> → clicca la finestra</p>
-      <div class="tipbox">💡 Aggiungi <strong>Ctrl</strong> per copiare negli appunti invece di salvare.</div>
-    </div></div>
-  </div>
-
-  <div class="acc-item">
-    <button class="acc-head" onclick="togAcc(this)" aria-expanded="false"><div class="acc-left"><div class="acc-badge">🔒</div>Come conservare le prove</div><span class="acc-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></button>
-    <div class="acc-body"><div class="acc-content">
-      <ul>
-        <li><strong>Non modificare mai gli screenshot</strong> — valgono come prova legale solo se integri</li>
-        <li>Cattura sempre <strong>mittente, data e ora</strong> visibili</li>
-        <li>Non rinominare i file: contengono data e ora nei metadati</li>
-        <li>Fai una copia su cloud (Google Drive, iCloud) e una copia locale</li>
-        <li>Per email: usa <strong>Stampa → Salva come PDF</strong> per conservare le intestazioni</li>
-        <li>Per siti web: usa <strong>Archive.org</strong> per documentarli prima che vengano rimossi</li>
-      </ul>
-    </div></div>
-  </div>
-
-  <div id="autorita" style="padding-top:0.5rem"></div>
-  <div class="sec-head">
-    <div class="sec-ico red">🚨</div>
-    <div><div class="sec-title">Segnala la Truffa</div><div class="sec-sub">Non restare solo/a — la tua denuncia protegge anche gli altri</div></div>
-  </div>
-
-  <div class="emergency">
-    <div class="emergency-ico">🏦</div>
-    <div class="emergency-txt">In caso di truffa bancaria, chiama <strong>immediatamente la tua banca</strong> per bloccare transazioni sospette — prima di sporgere denuncia. Ogni minuto conta.</div>
-  </div>
-
-  <div class="auth-grid">
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">👮</div><div><div class="auth-name">Polizia di Stato</div><div class="auth-role">Commissariato Online · Crimini informatici</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.commissariatops.it" target="_blank" rel="noopener"><span>🌐</span> commissariatops.it</a><a class="auth-link" href="tel:113"><span>📞</span> 113 — Emergenze</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">🎖️</div><div><div class="auth-name">Carabinieri</div><div class="auth-role">Denunce e supporto alle vittime</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.carabinieri.it" target="_blank" rel="noopener"><span>🌐</span> carabinieri.it</a><a class="auth-link" href="tel:112"><span>📞</span> 112 — Emergenze</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">📡</div><div><div class="auth-name">Polizia Postale</div><div class="auth-role">Specializzata in frodi online e cybercrime</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.commissariatops.it" target="_blank" rel="noopener"><span>🌐</span> Denuncia online</a><a class="auth-link" href="tel:800253560"><span>📞</span> 800 25 35 60 (gratuito)</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">⚖️</div><div><div class="auth-name">AGCM</div><div class="auth-role">Pratiche commerciali scorrette</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.agcm.it/segnalazioni" target="_blank" rel="noopener"><span>🌐</span> Segnalazione AGCM</a><a class="auth-link" href="tel:06121010"><span>📞</span> 06 12 10 10</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">💳</div><div><div class="auth-name">Arbitro Bancario</div><div class="auth-role">Truffe bancarie e finanziarie</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.arbitrobancariofinanziario.it" target="_blank" rel="noopener"><span>🌐</span> arbitrobancariofinanziario.it</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">🇪🇺</div><div><div class="auth-name">ENISA</div><div class="auth-role">Agenzia UE per la cybersicurezza</div></div></div><div class="auth-links"><a class="auth-link" href="https://www.enisa.europa.eu" target="_blank" rel="noopener"><span>🌐</span> enisa.europa.eu</a></div></div>
-    <div class="auth-card"><div class="auth-top"><div class="auth-emoji">📧</div><div><div class="auth-name">Segnala Phishing</div><div class="auth-role">Siti e link fraudolenti</div></div></div><div class="auth-links"><a class="auth-link" href="https://safebrowsing.google.com/safebrowsing/report_phish/" target="_blank" rel="noopener"><span>🌐</span> Segnala a Google</a><a class="auth-link" href="https://www.microsoft.com/en-us/wdsi/support/report-unsafe-site" target="_blank" rel="noopener"><span>🌐</span> Segnala a Microsoft</a></div></div>
-  </div>
-
-</main>
-
-<footer>
-  <div class="footer-logo">Scudo <span>AI</span> by MC</div>
-  <div class="footer-note">Strumento informativo gratuito di supporto anti-truffa. Non sostituisce consulenza legale professionale.</div>
-</footer>
-
-<div id="install-modal" onclick="handleModalBg(event)">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <div class="modal-bigico">📲</div>
-      <div class="modal-title">Installa Scudo AI</div>
-      <div class="modal-sub">Aggiungila alla schermata home: funziona come un'app nativa, gratis per sempre.</div>
-    </div>
-    <div class="ptabs">
-      <button class="ptab active" onclick="switchPtab('android',this)">🤖 Android</button>
-      <button class="ptab" onclick="switchPtab('ios',this)">🍎 iPhone</button>
-      <button class="ptab" onclick="switchPtab('desktop',this)">💻 PC / Mac</button>
-    </div>
-    <div class="psteps active" id="psteps-android">
-      <div class="step-row"><div class="step-num">1</div><div class="step-txt">Apri questa pagina in <strong>Chrome</strong> sul tuo Android</div></div>
-      <div class="step-row"><div class="step-num">2</div><div class="step-txt">Tocca il menu <strong>⋮</strong> in alto a destra</div></div>
-      <div class="step-row"><div class="step-num">3</div><div class="step-txt">Seleziona <strong>"Aggiungi a schermata Home"</strong></div></div>
-      <div class="step-row"><div class="step-num">4</div><div class="step-txt">Conferma: l'icona <strong>Scudo AI</strong> appare nella schermata home!</div></div>
-    </div>
-    <div class="psteps" id="psteps-ios">
-      <div class="step-row"><div class="step-num">1</div><div class="step-txt">Apri questa pagina in <strong>Safari</strong> (non Chrome)</div></div>
-      <div class="step-row"><div class="step-num">2</div><div class="step-txt">Tocca l'icona <strong>Condividi</strong> (quadrato con la freccia verso l'alto)</div></div>
-      <div class="step-row"><div class="step-num">3</div><div class="step-txt">Scorri e tocca <strong>"Aggiungi alla schermata Home"</strong></div></div>
-      <div class="step-row"><div class="step-num">4</div><div class="step-txt">Tocca <strong>"Aggiungi"</strong>: l'app è installata!</div></div>
-    </div>
-    <div class="psteps" id="psteps-desktop">
-      <div class="step-row"><div class="step-num">1</div><div class="step-txt">Apri in <strong>Chrome</strong> o <strong>Edge</strong></div></div>
-      <div class="step-row"><div class="step-num">2</div><div class="step-txt">Clicca l'icona <strong>⊕</strong> nella barra degli indirizzi</div></div>
-      <div class="step-row"><div class="step-num">3</div><div class="step-txt">Clicca <strong>"Installa"</strong> nella finestra che appare</div></div>
-      <div class="step-row"><div class="step-num">4</div><div class="step-txt">L'app si apre come finestra separata!</div></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-install" id="native-install-btn" style="display:none" onclick="triggerNativeInstall()">⬇️ Installa con un clic</button>
-      <button class="btn-close" onclick="closeInstallModal()">Chiudi</button>
-    </div>
-  </div>
 </div>
+  </main>
 
-<script>
-let currentTab='text',imageBase64=null,imageType=null;
+  <div id="install-modal">
+    <div class="modal-box">
+      <div class="modal-hdr">
+        <div class="modal-bigico">🛡️</div>
+        <div class="modal-title">Installa Scudo AI</div>
+        <div class="modal-sub">Aggiungi l'app alla tua home per analizzare messaggi sospetti in un tocco.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-install" id="pwa-install-btn">Installa ora</button>
+        <button class="btn-close" onclick="closeInstallModal()">Chiudi</button>
+      </div>
+    </div>
+  </div>
 
-function goTo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+  <footer>
+    <div class="footer-logo">Scudo <span>AI</span></div>
+    <p class="footer-note">Strumento di analisi basato su Intelligenza Artificiale. Non sostituisce il parere delle autorità competenti. I dati inseriti non vengono salvati.</p>
+  </footer>
 
-function switchTab(tab,btn){
-  currentTab=tab;
-  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false')});
-  btn.classList.add('active');btn.setAttribute('aria-selected','true');
-  document.getElementById('panel-text').style.display=tab==='text'?'block':'none';
-  document.getElementById('panel-image').style.display=tab==='image'?'block':'none';
-  document.getElementById('result-section').style.display='none';
-}
+  <script>
+    // Gestione Tab
+    function switchTab(type, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-text').style.display = type === 'text' ? 'block' : 'none';
+      document.getElementById('panel-image').style.display = type === 'image' ? 'block' : 'none';
+    }
 
-const imgInput=document.getElementById('img-input'),preview=document.getElementById('preview-img'),dropZone=document.getElementById('drop-zone');
-imgInput.addEventListener('change',e=>{if(e.target.files[0])loadImage(e.target.files[0])});
-dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.style.borderColor='rgba(59,130,246,0.5)'});
-dropZone.addEventListener('dragleave',()=>dropZone.style.borderColor='');
-dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.style.borderColor='';const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadImage(f)});
-function loadImage(file){
-  if(file.size>5*1024*1024){alert('File troppo grande. Max 5 MB.');return}
-  const r=new FileReader();
-  r.onload=ev=>{preview.src=ev.target.result;preview.style.display='block';imageBase64=ev.target.result.split(',')[1];imageType=file.type};
-  r.readAsDataURL(file);
-}
+    // Funzione principale di Analisi
+    async function analyze() {
+      const btn = document.getElementById('analyze-btn');
+      const msgInput = document.getElementById('msg-input');
+      const spinner = document.getElementById('spinner');
+      const resultSection = document.getElementById('result-section');
 
-function togAcc(btn){
-  const body=btn.nextElementSibling,chev=btn.querySelector('.acc-chev'),isOpen=body.classList.contains('open');
-  document.querySelectorAll('.acc-body.open').forEach(b=>{b.classList.remove('open');b.previousElementSibling.querySelector('.acc-chev').style.transform='';b.previousElementSibling.setAttribute('aria-expanded','false')});
-  if(!isOpen){body.classList.add('open');chev.style.transform='rotate(180deg)';btn.setAttribute('aria-expanded','true')}
-}
+      const text = msgInput.value.trim();
+      if (!text) {
+        alert("Per favore, incolla un messaggio da analizzare.");
+        return;
+      }
 
-function setGauge(pct){
-  const c=264,off=c-(pct/100)*c,arc=document.getElementById('gauge-arc');
-  arc.style.strokeDashoffset=off;
-  const col=pct<25?'#22c55e':pct<50?'#f59e0b':pct<75?'#f97316':'#ef4444';
-  arc.style.stroke=col;
-  const el=document.getElementById('gauge-pct');el.textContent=pct+'%';el.style.color=col;
-}
+      // UI State: Caricamento
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      resultSection.style.display = 'none';
 
-function riskInfo(pct){
-  if(pct<25)return{level:'✅ Rischio basso',color:'#4ade80',desc:'Il contenuto non mostra segnali evidenti di truffa. Mantieni comunque la prudenza.',chips:'<span class="chip safe">Probabile legittimo</span><span class="chip safe">Nessun allarme urgente</span>'};
-  if(pct<50)return{level:'🟡 Rischio moderato',color:'#fbbf24',desc:'Alcuni elementi richiedono attenzione. Verifica prima di cliccare link o rispondere.',chips:'<span class="chip warn">Elementi sospetti</span><span class="chip warn">Verifica consigliata</span>'};
-  if(pct<75)return{level:'🟠 Rischio alto',color:'#fb923c',desc:'Forti segnali di truffa. Non cliccare link, non rispondere, non condividere dati.',chips:'<span class="chip danger">Probabile truffa</span><span class="chip danger">Non rispondere</span>'};
-  return{level:'🔴 Rischio molto alto',color:'#f87171',desc:'Quasi certamente una truffa. Non agire e segnala subito alle autorità.',chips:'<span class="chip danger">Truffa confermata</span><span class="chip danger">Segnala subito</span><span class="chip danger">Non cliccare nulla</span>'};
-}
+      try {
+        const response = await fetch("/.netlify/functions/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
 
-async function analyze(){
-  const btn=document.getElementById('analyze-btn'),spinner=document.getElementById('spinner'),resSec=document.getElementById('result-section');
-  if(currentTab==='text'&&!document.getElementById('msg-input').value.trim()){alert('Inserisci prima il testo da analizzare.');return}
-  if(currentTab==='image'&&!imageBase64){alert("Carica prima un'immagine.");return}
-  btn.disabled=true;btn.innerHTML='<span>⏳</span> Analisi in corso...';
-  spinner.style.display='block';resSec.style.display='none';
+        const data = await response.json();
 
-  const payload={type:currentTab};
-  if(currentTab==='text'){
-    payload.text=document.getElementById('msg-input').value.trim();
-  } else {
-    payload.imageBase64=imageBase64;
-    payload.imageType=imageType;
-    payload.extra=document.getElementById('img-extra').value.trim();
-  }
+        if (!response.ok) throw new Error(data.error || "Errore sconosciuto");
 
-  try{
-    const res=await fetch('/.netlify/functions/analyze',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    });
-    if(!res.ok) throw new Error('Errore server: '+res.status);
-    const parsed=await res.json();
-    if(parsed.error) throw new Error(parsed.error);
+        displayResults(data);
+      } catch (error) {
+        alert("Errore durante l'analisi: " + error.message);
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    }
 
-    const pct=Math.max(0,Math.min(100,parseInt(parsed.riskPercent)||0));
-    const info=riskInfo(pct);
-    setGauge(pct);
-    document.getElementById('risk-level').textContent=info.level;
-    document.getElementById('risk-level').style.color=info.color;
-    document.getElementById('risk-desc').textContent=info.desc;
-    document.getElementById('risk-chips').innerHTML=info.chips;
-    const banner=document.getElementById('risk-banner');
-    banner.style.borderColor=info.color+'44';
-    banner.style.background=pct>=75?'linear-gradient(135deg,rgba(239,68,68,0.07),var(--s1))':pct>=50?'linear-gradient(135deg,rgba(249,115,22,0.07),var(--s1))':pct>=25?'linear-gradient(135deg,rgba(245,158,11,0.07),var(--s1))':'linear-gradient(135deg,rgba(34,197,94,0.07),var(--s1))';
-    document.getElementById('signals-out').innerHTML=parsed.signals||'<p>Nessun segnale specifico individuato.</p>';
-    document.getElementById('advice-out').innerHTML=parsed.advice||'<p>Mantieni prudenza generale.</p>';
-    document.getElementById('steps-out').innerHTML=parsed.nextSteps||'<p>Nessuna azione immediata richiesta.</p>';
-    spinner.style.display='none';resSec.style.display='block';
-    resSec.scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(err){
-    spinner.style.display='none';
-    alert('Errore: '+err.message+'\n\nSe il problema persiste, controlla che la chiave API sia configurata correttamente su Netlify.');
-  }finally{
-    btn.disabled=false;btn.innerHTML='🛡️ Analizza ora';
-  }
-}
-</script>
-<script>
-const manifest={name:"Scudo AI by MC",short_name:"Scudo AI",description:"Analizzatore anti-truffa con intelligenza artificiale",start_url:"./",display:"standalone",background_color:"#0b1120",theme_color:"#0b1120",orientation:"portrait-primary",icons:[{src:"data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="80" fill="#0b1120"/><text x="256" y="340" font-size="280" text-anchor="middle">🛡️</text></svg>`),sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
-document.getElementById('pwa-manifest').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
-if('serviceWorker' in navigator){const sw=`const C='scudo-v4';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./'])));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))})`;navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{})}
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-btn').classList.add('visible');document.getElementById('native-install-btn').style.display='flex'});
-window.addEventListener('appinstalled',()=>{document.getElementById('install-btn').classList.remove('visible');closeInstallModal();deferredPrompt=null});
-function openInstallModal(){document.getElementById('install-modal').classList.add('open');document.body.style.overflow='hidden';const ua=navigator.userAgent.toLowerCase();switchPtabByName(/iphone|ipad|ipod/.test(ua)?'ios':/android/.test(ua)?'android':'desktop')}
-function closeInstallModal(){document.getElementById('install-modal').classList.remove('open');document.body.style.overflow=''}
-function handleModalBg(e){if(e.target===document.getElementById('install-modal'))closeInstallModal()}
-function switchPtab(name,btn){document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.psteps').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('psteps-'+name).classList.add('active')}
-function switchPtabByName(name){const names=['android','ios','desktop'];document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));document.querySelectorAll('.psteps').forEach(p=>p.classList.remove('active'));document.getElementById('psteps-'+name).classList.add('active')}
-async function triggerNativeInstall(){if(!deferredPrompt)return;deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;if(outcome==='accepted')closeInstallModal();deferredPrompt=null}
-window.addEventListener('load',()=>{if(window.matchMedia('(display-mode: standalone)').matches)document.getElementById('install-btn').style.display='none'});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInstallModal()});
-</script>
+    function displayResults(data) {
+      const resultSection = document.getElementById('result-section');
+      const gaugePct = document.getElementById('gauge-pct');
+      const gaugeArc = document.getElementById('gauge-arc');
+      const riskLevel = document.getElementById('risk-level');
+      const riskDesc = document.getElementById('risk-desc');
+      
+      // Estraiamo il testo della risposta di Gemini
+      // Nota: la struttura dipende da come risponde l'API v1beta
+      const aiResponse = data.candidates[0].content.parts[0].text;
+      
+      // Semplice logica di visualizzazione (puoi espanderla)
+      resultSection.style.display = 'block';
+      riskDesc.innerText = aiResponse;
+      riskLevel.innerText = "Analisi Completata";
+      gaugePct.innerText = "AI";
+      gaugeArc.style.strokeDashoffset = "0";
+      
+      resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function goTo(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function openInstallModal() { document.getElementById('install-modal').classList.add('open'); }
+    function closeInstallModal() { document.getElementById('install-modal').classList.remove('open'); }
+    function togAcc(btn) {
+      const body = btn.nextElementSibling;
+      body.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>
