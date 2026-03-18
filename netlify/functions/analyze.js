@@ -1,51 +1,61 @@
 export async function handler(event) {
+  // Log per capire cosa arriva dal tuo sito (lo vedrai nei log di Netlify)
+  console.log("Dati ricevuti dal frontend:", event.body);
+
   try {
-    // Cerchiamo entrambe le varianti della chiave per sicurezza
     const API_KEY = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
 
     if (!API_KEY) {
+      console.error("ERRORE: API Key non trovata su Netlify");
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "Chiave API mancante nelle impostazioni di Netlify" }),
+        body: JSON.stringify({ error: "Configurazione incompleta: manca la chiave API" }),
       };
     }
 
-    const { text } = JSON.parse(event.body || "{}");
+    const body = JSON.parse(event.body || "{}");
+    const textToAnalyze = body.text || "Messaggio di test";
 
-    // Usiamo il modello 'flash', che è più stabile e veloce per gli account gratuiti
+    // Cambiamo l'URL a v1beta (più permissivo per le API Key)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: text || "Analizza questo messaggio" }] }],
+        contents: [{ parts: [{ text: textToAnalyze }] }],
       }),
     });
 
     const data = await response.json();
 
-    // Gestione degli errori provenienti direttamente da Google
-    if (data.error) {
-      console.error("Errore Google API:", data.error);
+    // Se Google risponde con un errore (es. 404, 400, 403)
+    if (!response.ok || data.error) {
+      console.error("Errore dettagliato da Google:", data.error);
       return {
-        statusCode: data.error.code || 500,
-        body: JSON.stringify({ error: data.error.message }),
+        statusCode: response.status || 500,
+        body: JSON.stringify({ 
+          error: data.error?.message || "Errore sconosciuto da Google API",
+          status: response.status
+        }),
       };
     }
 
-    // Se tutto va bene, restituiamo i dati
+    // Risposta corretta
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*" 
+      },
       body: JSON.stringify(data),
     };
 
   } catch (error) {
-    console.error("Errore interno funzione:", error);
+    console.error("Errore critico nella funzione:", error.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Errore del server: " + error.message }),
+      body: JSON.stringify({ error: "Errore interno del server: " + error.message }),
     };
   }
-}
+} 
