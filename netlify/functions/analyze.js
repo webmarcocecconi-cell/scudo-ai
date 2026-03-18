@@ -5,12 +5,18 @@ exports.handler = async function(event) {
 
   const API_KEY = process.env.GEMINI_API_KEY;
   if (!API_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'API key non configurata.' }) };
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ error: 'Chiave API mancante. Configura GEMINI_API_KEY su Netlify.' }) 
+    };
   }
 
   let body;
-  try { body = JSON.parse(event.body); }
-  catch { return { statusCode: 400, body: JSON.stringify({ error: 'Richiesta non valida.' }) }; }
+  try { 
+    body = JSON.parse(event.body); 
+  } catch(e) { 
+    return { statusCode: 400, body: JSON.stringify({ error: 'Richiesta non valida: ' + e.message }) }; 
+  }
 
   const { type, text, imageBase64, imageType, extra } = body;
 
@@ -29,29 +35,47 @@ Sii preciso e specifico. Linguaggio semplice per non esperti. Rispondi in italia
   }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts }] })
-      }
-    );
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts }] })
+    });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    
+    if (!response.ok) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Errore Gemini API: ' + responseText })
+      };
+    }
+
+    const data = JSON.parse(responseText);
     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const clean = raw.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Risposta AI non valida: ' + clean.substring(0, 200) })
+      };
+    }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(parsed)
     };
+
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Errore analisi: ' + err.message })
+      body: JSON.stringify({ error: 'Errore di rete: ' + err.message })
     };
   }
 };
