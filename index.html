@@ -1,103 +1,85 @@
-</div>
-  </main>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scudo AI — Analizzatore Anti-Truffa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b1120; --s1: #131e35; --blue: #3b82f6; --teal: #14b8a6; --txt: #f0f6ff; --txt2: #94a3b8;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--txt); margin: 0; padding: 0; line-height: 1.6; }
+        nav { display: flex; align-items: center; padding: 1rem 1.5rem; background: rgba(11,17,32,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); sticky; top: 0; z-index: 100; }
+        .hero { text-align: center; padding: 4rem 1.5rem; }
+        .card { background: var(--s1); max-width: 600px; margin: 0 auto 2rem; padding: 2rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        textarea { width: 100%; height: 150px; background: #0b1120; border: 1px solid #3b82f6; border-radius: 12px; color: white; padding: 1rem; box-sizing: border-box; font-family: inherit; margin-bottom: 1rem; }
+        .btn-primary { width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--blue), var(--teal)); border: none; border-radius: 12px; color: white; font-weight: 800; cursor: pointer; }
+        #spinner { display: none; text-align: center; margin: 1rem 0; }
+        #result-section { display: none; background: #1a2744; padding: 1.5rem; border-radius: 15px; margin-top: 1rem; border-left: 5px solid var(--blue); }
+        footer { text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--txt2); }
+    </style>
+</head>
+<body>
+    <nav><strong>🛡️ Scudo AI</strong></nav>
+    <header class="hero">
+        <h1>Proteggiti dalle <span style="color:var(--blue)">Truffe</span></h1>
+        <p>Incolla un messaggio sospetto e l'IA lo analizzerà per te.</p>
+    </header>
 
-  <div id="install-modal">
-    <div class="modal-box">
-      <div class="modal-hdr">
-        <div class="modal-bigico">🛡️</div>
-        <div class="modal-title">Installa Scudo AI</div>
-        <div class="modal-sub">Aggiungi l'app alla tua home per analizzare messaggi sospetti in un tocco.</div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-install" id="pwa-install-btn">Installa ora</button>
-        <button class="btn-close" onclick="closeInstallModal()">Chiudi</button>
-      </div>
-    </div>
-  </div>
+    <main style="padding: 0 1rem;">
+        <div class="card">
+            <textarea id="msg-input" placeholder="Incolla qui il messaggio (SMS, Email, WhatsApp)..."></textarea>
+            <button class="btn-primary" id="analyze-btn" onclick="analyze()">🛡️ Analizza ora</button>
+            
+            <div id="spinner">Analisi in corso...</div>
+            
+            <div id="result-section">
+                <h3 id="risk-level" style="margin-top:0">Risultato:</h3>
+                <p id="risk-desc"></p>
+            </div>
+        </div>
+    </main>
 
-  <footer>
-    <div class="footer-logo">Scudo <span>AI</span></div>
-    <p class="footer-note">Strumento di analisi basato su Intelligenza Artificiale. Non sostituisce il parere delle autorità competenti. I dati inseriti non vengono salvati.</p>
-  </footer>
+    <footer>Scudo AI by MC — Nessun dato viene salvato.</footer>
 
-  <script>
-    // Gestione Tab
-    function switchTab(type, btn) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panel-text').style.display = type === 'text' ? 'block' : 'none';
-      document.getElementById('panel-image').style.display = type === 'image' ? 'block' : 'none';
-    }
+    <script>
+        async function analyze() {
+            const input = document.getElementById('msg-input').value.trim();
+            const btn = document.getElementById('analyze-btn');
+            const spinner = document.getElementById('spinner');
+            const result = document.getElementById('result-section');
+            const desc = document.getElementById('risk-desc');
 
-    // Funzione principale di Analisi
-    async function analyze() {
-      const btn = document.getElementById('analyze-btn');
-      const msgInput = document.getElementById('msg-input');
-      const spinner = document.getElementById('spinner');
-      const resultSection = document.getElementById('result-section');
+            if (!input) return alert("Inserisci un testo!");
 
-      const text = msgInput.value.trim();
-      if (!text) {
-        alert("Per favore, incolla un messaggio da analizzare.");
-        return;
-      }
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            result.style.display = 'none';
 
-      // UI State: Caricamento
-      btn.disabled = true;
-      spinner.style.display = 'block';
-      resultSection.style.display = 'none';
+            try {
+                const response = await fetch("/.netlify/functions/analyze", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: input })
+                });
 
-      try {
-        const response = await fetch("/.netlify/functions/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: text })
-        });
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || "Errore del server");
 
-        const data = await response.json();
-
-        if (!response.ok) throw new Error(data.error || "Errore sconosciuto");
-
-        displayResults(data);
-      } catch (error) {
-        alert("Errore durante l'analisi: " + error.message);
-      } finally {
-        btn.disabled = false;
-        spinner.style.display = 'none';
-      }
-    }
-
-    function displayResults(data) {
-      const resultSection = document.getElementById('result-section');
-      const gaugePct = document.getElementById('gauge-pct');
-      const gaugeArc = document.getElementById('gauge-arc');
-      const riskLevel = document.getElementById('risk-level');
-      const riskDesc = document.getElementById('risk-desc');
-      
-      // Estraiamo il testo della risposta di Gemini
-      // Nota: la struttura dipende da come risponde l'API v1beta
-      const aiResponse = data.candidates[0].content.parts[0].text;
-      
-      // Semplice logica di visualizzazione (puoi espanderla)
-      resultSection.style.display = 'block';
-      riskDesc.innerText = aiResponse;
-      riskLevel.innerText = "Analisi Completata";
-      gaugePct.innerText = "AI";
-      gaugeArc.style.strokeDashoffset = "0";
-      
-      resultSection.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function goTo(id) {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function openInstallModal() { document.getElementById('install-modal').classList.add('open'); }
-    function closeInstallModal() { document.getElementById('install-modal').classList.remove('open'); }
-    function togAcc(btn) {
-      const body = btn.nextElementSibling;
-      body.classList.toggle('open');
-    }
-  </script>
+                // Gestione risposta Gemini
+                const aiText = data.candidates[0].content.parts[0].text;
+                desc.innerText = aiText;
+                result.style.display = 'block';
+            } catch (err) {
+                alert("Errore: " + err.message);
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
